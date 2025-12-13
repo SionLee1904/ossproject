@@ -13,7 +13,7 @@ export default function HomePage() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [hasSearched, setHasSearched] = useState(false); //
 
-  const { favorites, toggleFavorite } = useFavorites();
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   const handleSearch = async ({ name, type }) => {
     setHasSearched(true); //
@@ -46,7 +46,7 @@ export default function HomePage() {
           <ul>
             <li>카드 이름/타입으로 검색</li>
             <li>카드 이미지, 효과, 스탯 보기</li>
-            <li>즐겨찾기 기능(브라우저 LocalStorage 저장)</li>
+           <li>즐겨찾기 기능(MockAPI REST API에 CRUD로 저장)</li>
           </ul>
           <p>
             앞으로 덱 빌더, 금제 리스트 보기, 아키타입별 필터 등 다양한 기능을 추가할 수 있습니다.
@@ -63,7 +63,7 @@ export default function HomePage() {
      <CardDetailModal
   card={selectedCard}
   onClose={() => setSelectedCard(null)}
-  isFavorite={selectedCard ? favorites.some((c) => c.id === selectedCard.id) : false}
+ isFavorite={selectedCard ? isFavorite(selectedCard.id) : false}
   onToggleFavorite={toggleFavorite}
 />
 
