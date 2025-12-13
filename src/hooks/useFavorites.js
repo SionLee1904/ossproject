@@ -16,17 +16,17 @@ export default function useFavorites() {
     }
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
-  }, [favorites]);
-
   const toggleFavorite = (card) => {
     setFavorites((prev) => {
       const exists = prev.some((c) => c.id === card.id);
-      if (exists) {
-        return prev.filter((c) => c.id !== card.id);
-      }
-      return [...prev, card];
+
+      const next = exists
+        ? prev.filter((c) => c.id !== card.id)
+        : [...prev, card];
+
+     
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
     });
   };
 

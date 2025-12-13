@@ -1,4 +1,9 @@
-export default function CardDetailModal({ card, onClose }) {
+export default function CardDetailModal({
+  card,
+  onClose,
+  isFavorite,
+  onToggleFavorite,
+}) {
   if (!card) return null;
 
   const imageUrl = card.card_images?.[0]?.image_url;
@@ -35,9 +40,19 @@ export default function CardDetailModal({ card, onClose }) {
             style={{ width: "250px", borderRadius: "8px" }}
           />
         )}
+
         <div style={{ flex: 1 }}>
           <h2>{card.name}</h2>
           <p>{card.type}</p>
+
+          {/* 변경 전: 즐겨찾기 버튼이 여기 있었음 */}
+          <button
+            type="button"
+            onClick={() => onToggleFavorite(card)}
+            style={{ margin: "8px 0" }}
+          >
+            {isFavorite ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기 추가"}
+          </button>
 
           {card.atk !== undefined && (
             <p>

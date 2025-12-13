@@ -1,4 +1,4 @@
-export default function CardItem({ card, onClick, isFavorite, onToggleFavorite }) {
+export default function CardItem({ card, onClick }) {
   const imageUrl = card.card_images?.[0]?.image_url;
 
   return (
@@ -21,15 +21,6 @@ export default function CardItem({ card, onClick, isFavorite, onToggleFavorite }
       )}
       <h4 style={{ marginTop: "8px", fontSize: "14px" }}>{card.name}</h4>
       <p style={{ fontSize: "12px", color: "#555" }}>{card.type}</p>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleFavorite(card);
-        }}
-      >
-        {isFavorite ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기"}
-      </button>
     </div>
   );
 }

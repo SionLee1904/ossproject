@@ -1,8 +1,13 @@
 // src/App.jsx
+
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import AboutPage from "./pages/AboutPage";
+import SamplePage from "./pages/SamplePage";
+import FavoritesPage from "./pages/FavoritesPage";
 
+
+import SkyStriker from "./pages/deck/SkyStriker";
+import Altergeist from "./pages/deck/Altergeist";
 function App() {
   return (
     <BrowserRouter>
@@ -15,12 +20,13 @@ function App() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-        }}
-      >
+        }}>
         <h2 style={{ margin: 0 }}>Yu-Gi-Oh! 카드 뷰어</h2>
         <nav style={{ display: "flex", gap: "12px" }}>
           <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
+          <Link to="/sample">Sample Deck</Link>
+          <Link to="/favorites">Favorites</Link>
+
           {/* 나중에 <Link to="/deck">Deck Builder</Link> 이런 식으로 추가 가능 */}
         </nav>
       </header>
@@ -29,7 +35,11 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
+          <Route path="/sample" element={<SamplePage />} />
+          <Route path="/sample/sky-striker" element={<SkyStriker />}/>
+          <Route path="/sample/altergeist" element={<Altergeist />}/>
+          <Route path="/favorites" element={<FavoritesPage />} />
+
           {/* 나중 라우트 추가 예시 */}
           {/* <Route path="/deck" element={<DeckBuilderPage />} /> */}
         </Routes>
@@ -37,5 +47,7 @@ function App() {
     </BrowserRouter>
   );
 }
+
+
 
 export default App;
