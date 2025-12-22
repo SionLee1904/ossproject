@@ -1,74 +1,210 @@
+// src/components/CardDetailModal.jsx
+function getBanStatus(card, banFormat) {
+  const info = card?.banlist_info;
+  if (!info || !banFormat) return null;
+
+  const key = banFormat === "OCG" ? "ban_ocg" : "ban_tcg";
+  const status = info[key];
+  if (!status) return null;
+
+  if (status === "Banned") return { label: "금지", emoji: "🔴" };
+  if (status === "Limited") return { label: "제한", emoji: "🟡" };
+  if (status === "Semi-Limited") return { label: "준제한", emoji: "🟢" };
+  return null;
+}
+
+function tcgPlayerUrl(name) {
+  return `https://www.tcgplayer.com/search/yugioh/product?productLineName=yugioh&q=${encodeURIComponent(
+    name || ""
+  )}`;
+}
+
+function surugaYaUrl(name) {
+  return `https://www.suruga-ya.com/en/products?keyword=${encodeURIComponent(name || "")}&btn_search=`;
+}
+
 export default function CardDetailModal({
   card,
   onClose,
+
+  // 즐겨찾기 (네 프로젝트에서 쓰고 있으면 그대로 연결)
   isFavorite,
   onToggleFavorite,
+
+  // 메모 편집용(있으면 표시)
+  memoValue,
+  onMemoChange,
+  onMemoSave,
+  savingMemo = false,
+  showMemoEditor = false,
+
+  // ✅ 금제 표시용
+  banFormat,
 }) {
   if (!card) return null;
 
-  const imageUrl = card.card_images?.[0]?.image_url;
+  const image = card?.card_images?.[0]?.image_url;
+  const ban = getBanStatus(card, banFormat);
 
   return (
     <div
+      onClick={onClose}
       style={{
         position: "fixed",
         inset: 0,
-        backgroundColor: "rgba(0,0,0,0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1000,
+        background: "rgba(0,0,0,0.5)",
+        display: "grid",
+        placeItems: "center",
+        padding: 16,
+        zIndex: 999,
       }}
-      onClick={onClose}
     >
       <div
-        style={{
-          backgroundColor: "white",
-          padding: "16px",
-          borderRadius: "8px",
-          maxWidth: "800px",
-          width: "100%",
-          display: "flex",
-          gap: "16px",
-        }}
         onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(900px, 100%)",
+          background: "white",
+          borderRadius: 16,
+          overflow: "hidden",
+          border: "1px solid #ddd",
+        }}
       >
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt={card.name}
-            style={{ width: "250px", borderRadius: "8px" }}
-          />
-        )}
+        <div style={{ display: "grid", gridTemplateColumns: "320px 1fr" }}>
+          <div style={{ borderRight: "1px solid #eee", background: "#fafafa" }}>
+            {image ? (
+              <img src={image} alt={card?.name} style={{ width: "100%", display: "block" }} />
+            ) : (
+              <div style={{ height: 320, display: "grid", placeItems: "center", color: "#777" }}>
+                (이미지 없음)
+              </div>
+            )}
+          </div>
 
-        <div style={{ flex: 1 }}>
-          <h2>{card.name}</h2>
-          <p>{card.type}</p>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <h2 style={{ margin: 0 }}>{card?.name}</h2>
 
-          {/* 변경 전: 즐겨찾기 버튼이 여기 있었음 */}
-          <button
-            type="button"
-            onClick={() => onToggleFavorite(card)}
-            style={{ margin: "8px 0" }}
-          >
-            {isFavorite ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기 추가"}
-          </button>
+              {ban && (
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    border: "1px solid #ddd",
+                    fontSize: 13,
+                    background: "white",
+                  }}
+                  title={`${banFormat} ${ban.label}`}
+                >
+                  {ban.emoji} {banFormat} {ban.label}
+                </span>
+              )}
+            </div>
 
-          {card.atk !== undefined && (
-            <p>
-              ATK {card.atk} / DEF {card.def ?? "-"}
-            </p>
-          )}
-          {card.level && <p>Level / Rank: {card.level}</p>}
-          {card.attribute && <p>Attribute: {card.attribute}</p>}
-          {card.race && <p>Race: {card.race}</p>}
+            <div style={{ color: "#666", marginTop: 6 }}>{card?.type}</div>
 
-          <hr />
-          <p style={{ whiteSpace: "pre-wrap" }}>{card.desc}</p>
+            <div style={{ marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+              {card?.desc}
+            </div>
 
-          <button type="button" onClick={onClose} style={{ marginTop: "16px" }}>
-            닫기
-          </button>
+            <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {typeof onToggleFavorite === "function" && (
+                <button
+                  type="button"
+                  onClick={() => onToggleFavorite(card)}
+                  style={{
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    border: "1px solid #ddd",
+                    background: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  {isFavorite ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기 추가"}
+                </button>
+              )}
+
+              {/* ✅ 모든 카드 구매 링크 (상세에서도) */}
+              <a
+                href={tcgPlayerUrl(card?.name)}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 10,
+                  border: "1px solid #ddd",
+                  textDecoration: "none",
+                  color: "#111",
+                }}
+              >
+                TCGPlayer로 구매
+              </a>
+
+              <a
+                href={surugaYaUrl(card?.name)}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 10,
+                  border: "1px solid #ddd",
+                  textDecoration: "none",
+                  color: "#111",
+                }}
+              >
+                일본(Suruga-ya) 구매
+              </a>
+            </div>
+
+            {/* ✅ 메모는 카드 상세에서 작성 */}
+            {showMemoEditor && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>메모</div>
+                <textarea
+                  value={memoValue ?? ""}
+                  onChange={(e) => onMemoChange?.(e.target.value)}
+                  rows={4}
+                  style={{
+                    width: "100%",
+                    padding: 10,
+                    borderRadius: 10,
+                    border: "1px solid #ccc",
+                  }}
+                  placeholder="이 카드에 대한 메모를 적어보세요"
+                />
+                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                  <button
+                    type="button"
+                    onClick={onMemoSave}
+                    disabled={savingMemo}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 10,
+                      border: "1px solid #ddd",
+                      background: "white",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {savingMemo ? "저장 중..." : "메모 저장"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                marginTop: 14,
+                padding: "8px 10px",
+                borderRadius: 10,
+                border: "1px solid #ddd",
+                background: "white",
+                cursor: "pointer",
+              }}
+            >
+              닫기
+            </button>
+          </div>
         </div>
       </div>
     </div>

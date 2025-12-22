@@ -21,6 +21,12 @@ export default function CardItem({ card, onClick }) {
       )}
       <h4 style={{ marginTop: "8px", fontSize: "14px" }}>{card.name}</h4>
       <p style={{ fontSize: "12px", color: "#555" }}>{card.type}</p>
+     
+{card.memo && card.memo.trim() !== "" && (
+  <p style={{ margin: "6px 0 0", color: "#444", fontSize: "0.9rem" }}>
+    📝 {card.memo}
+  </p>
+)}
     </div>
   );
 }

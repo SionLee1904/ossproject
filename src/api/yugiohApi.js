@@ -1,35 +1,45 @@
 // src/api/yugiohApi.js
+const BASE = "https://db.ygoprodeck.com/api/v7/cardinfo.php";
 
-const BASE_URL = "https://db.ygoprodeck.com/api/v7";
+async function handle(res) {
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("[YGOPRODeck] API error:", res.status, res.statusText, text);
+    throw new Error("API request failed");
+  }
+  const json = await res.json();
+  return json?.data ?? [];
+}
 
-export async function fetchCards({ name, type }) {
+export async function fetchCards({ name, type } = {}) {
   const params = new URLSearchParams();
+  if (name && name.trim()) params.set("fname", name.trim());
+  if (type && type.trim() && type !== "All") params.set("type", type.trim());
 
-  if (name) {
-    // 부분 일치 검색
-    params.append("fname", name);
-  }
-  if (type) {
-    params.append("type", type);
-  }
-
-  const url = `${BASE_URL}/cardinfo.php?${params.toString()}`;
-
+  const url = `${BASE}?${params.toString()}`;
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error("카드 정보를 불러오는데 실패했습니다.");
-  }
-  const data = await res.json();
-  return data.data; // 카드 배열
+  return await handle(res);
 }
 
-export async function fetchCardById(id) {
-  const url = `${BASE_URL}/cardinfo.php?id=${id}`;
+export async function fetchCardById(cardId) {
+  const params = new URLSearchParams();
+  params.set("id", String(cardId));
+  const url = `${BASE}?${params.toString()}`;
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error("카드 정보를 불러오는데 실패했습니다.");
-  }
-  const data = await res.json();
-  return data.data[0];
+  const data = await handle(res);
+  return data[0] ?? null;
 }
 
+/**
+ * 금제 리스트: format = "TCG" | "OCG"
+ * - banlist 파라미터로 금제 대상 카드만 가져오고
+ * - 각 카드의 banlist_info.ban_tcg / ban_ocg 상태를 사용
+ */
+export async function fetchBanlistCards(format = "TCG") {
+  const params = new URLSearchParams();
+  params.set("banlist", format);   // 문서에 있는 파라미터 :contentReference[oaicite:1]{index=1}
+  const url = `${BASE}?${params.toString()}`;
+
+  const res = await fetch(url);
+  return await handle(res);
+}

@@ -1,65 +1,47 @@
-const baseURL = "https://6915405a84e8bd126af939de.mockapi.io/favorites";
+import { supabase } from "../lib/supabaseClient";
 
-
-// 공통 응답 처리
-async function handle(res, url, msg) {
-  if (!res.ok) {
-    const text = await res.text();
-    console.error("[MockAPI ERROR]", {
-      url,
-      status: res.status,
-      statusText: res.statusText,
-      body: text,
-    });
-    throw new Error(msg);
-  }
-  return res.json();
-}
-
-// READ
+// RLS가 있어서 기본적으로 "내 것만" 보이지만,
+// 안전하게 user_id eq를 같이 걸어도 OK.
 export async function listFavorites(userId) {
-  const url = baseURL;
-  const res = await fetch(url);
-  const data = await handle(res, url, "Failed to load favorites");
-  return data.filter((f) => f.userId === userId);
+  const { data, error } = await supabase
+    .from("favorites")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data ?? [];
 }
 
-// CREATE
 export async function createFavorite(payload) {
-  const url = baseURL;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  return handle(res, url, "Failed to create favorite");
+  const { data, error } = await supabase
+    .from("favorites")
+    .insert(payload)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data;
 }
 
-// UPDATE
 export async function updateFavorite(id, patch) {
-  const url = `${baseURL}/${id}`;
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(patch),
-  });
-  return handle(res, url, "Failed to update favorite");
+  const { data, error } = await supabase
+    .from("favorites")
+    .update(patch)
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data;
 }
 
-// DELETE
 export async function deleteFavorite(id) {
-  const url = `${baseURL}/${id}`;
-  const res = await fetch(url, { method: "DELETE" });
+  const { error } = await supabase
+    .from("favorites")
+    .delete()
+    .eq("id", id);
 
-  if (!res.ok) {
-    const text = await res.text();
-    console.error("[MockAPI DELETE ERROR]", {
-      url,
-      status: res.status,
-      body: text,
-    });
-    throw new Error("Failed to delete favorite");
-  }
-
+  if (error) throw error;
   return true;
 }
