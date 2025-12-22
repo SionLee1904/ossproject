@@ -1,49 +1,6 @@
+// src/components/SearchBar.jsx
 import { useState } from "react";
 
-/** 스타일(렌더마다 재생성 방지) */
-const selectStyle = {
-  padding: "8px",
-  borderRadius: "6px",
-  border: "1px solid #ddd",
-  flex: 1,
-  minWidth: "140px",
-  background: "white",
-};
-
-const inputStyle = {
-  flex: 1,
-  padding: "10px",
-  borderRadius: "6px",
-  border: "1px solid #ccc",
-};
-
-const primaryBtn = {
-  padding: "10px 24px",
-  cursor: "pointer",
-  background: "#007bff",
-  color: "white",
-  border: "none",
-  borderRadius: "6px",
-};
-
-const grayBtn = {
-  padding: "10px 16px",
-  cursor: "pointer",
-  background: "#f0f0f0",
-  border: "1px solid #ccc",
-  borderRadius: "6px",
-};
-
-const chipStyle = {
-  padding: "4px 12px",
-  borderRadius: "16px",
-  border: "1px solid #eee",
-  background: "#f5f5f5",
-  fontSize: "12px",
-  cursor: "pointer",
-};
-
-/** 옵션(확장 쉬움) */
 const TYPE_OPTIONS = [
   { value: "", label: "All Types" },
   { value: "Effect Monster", label: "Effect Monster" },
@@ -66,11 +23,10 @@ export default function SearchBar({ onSearch, history = [], onClearHistory }) {
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [attribute, setAttribute] = useState("");
-  const [level, setLevel] = useState(""); // string으로 유지 (select 값)
+  const [level, setLevel] = useState("");
 
   const buildPayload = (override = {}) => {
     const cleanName = (override.name ?? name).trim();
-
     return {
       name: cleanName,
       type: override.type ?? type,
@@ -79,15 +35,12 @@ export default function SearchBar({ onSearch, history = [], onClearHistory }) {
     };
   };
 
-  const isEmptyPayload = (p) =>
-    !p.name && !p.type && !p.attribute && !p.level;
+  const isEmpty = (p) => !p.name && !p.type && !p.attribute && !p.level;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const payload = buildPayload();
-    if (isEmptyPayload(payload)) return; // ✅ 완전 빈 검색 방지
-
+    if (isEmpty(payload)) return;
     onSearch(payload);
   };
 
@@ -99,37 +52,30 @@ export default function SearchBar({ onSearch, history = [], onClearHistory }) {
   };
 
   const handleClickHistory = (term) => {
+    setName(term);
     const payload = buildPayload({ name: term });
-
-    setName(term);               // ✅ 입력칸도 업데이트
-    if (!isEmptyPayload(payload)) onSearch(payload); // ✅ 즉시 검색
+    if (!isEmpty(payload)) onSearch(payload);
   };
 
   const showHistory = Array.isArray(history) && history.length > 0;
 
   return (
-    <div style={{ marginBottom: "24px" }}>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {/* 상단: 검색어 + 버튼 */}
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+    <div className="search">
+      <form onSubmit={handleSubmit} className="search__form">
+        <div className="search__row">
           <input
+            className="search__input"
             type="text"
             placeholder="카드 이름(영문) ex) Dark Magician"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            style={inputStyle}
           />
-          <button type="submit" style={primaryBtn}>
-            Search
-          </button>
-          <button type="button" onClick={handleReset} style={grayBtn}>
-            Reset
-          </button>
+          <button className="btn btn--primary" type="submit">Search</button>
+          <button className="btn" type="button" onClick={handleReset}>Reset</button>
         </div>
 
-        {/* 하단: 필터들 */}
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          <select value={type} onChange={(e) => setType(e.target.value)} style={selectStyle}>
+        <div className="search__row search__filters">
+          <select className="select" value={type} onChange={(e) => setType(e.target.value)}>
             {TYPE_OPTIONS.map((opt) => (
               <option key={opt.value || "all"} value={opt.value}>
                 {opt.label}
@@ -137,7 +83,7 @@ export default function SearchBar({ onSearch, history = [], onClearHistory }) {
             ))}
           </select>
 
-          <select value={attribute} onChange={(e) => setAttribute(e.target.value)} style={selectStyle}>
+          <select className="select" value={attribute} onChange={(e) => setAttribute(e.target.value)}>
             {ATTRIBUTE_OPTIONS.map((opt) => (
               <option key={opt.value || "all"} value={opt.value}>
                 {opt.label}
@@ -145,40 +91,31 @@ export default function SearchBar({ onSearch, history = [], onClearHistory }) {
             ))}
           </select>
 
-          <select value={level} onChange={(e) => setLevel(e.target.value)} style={selectStyle}>
+          <select className="select" value={level} onChange={(e) => setLevel(e.target.value)}>
             <option value="">All Levels/Ranks</option>
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
-              <option key={n} value={String(n)}>
-                {n}
-              </option>
+            {Array.from({ length: 12 }, (_, i) => String(i + 1)).map((n) => (
+              <option key={n} value={n}>{n}</option>
             ))}
           </select>
         </div>
       </form>
 
-      {/* 최근 검색어 */}
       {showHistory && (
-        <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "12px", color: "#777" }}>최근 검색:</span>
-
-          {history.map((term, index) => (
+        <div className="history">
+          <span className="history__label">최근 검색:</span>
+          {history.map((term, idx) => (
             <button
-              key={`${term}-${index}`}
+              key={`${term}-${idx}`}
               type="button"
+              className="chip"
               onClick={() => handleClickHistory(term)}
-              style={chipStyle}
               title="클릭하면 바로 검색"
             >
               {term}
             </button>
           ))}
-
           {typeof onClearHistory === "function" && (
-            <button
-              type="button"
-              onClick={onClearHistory}
-              style={{ border: "none", background: "none", color: "#ff4d4f", fontSize: "12px", cursor: "pointer" }}
-            >
+            <button type="button" className="linkDanger" onClick={onClearHistory}>
               기록 삭제
             </button>
           )}

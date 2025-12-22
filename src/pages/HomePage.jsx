@@ -16,6 +16,7 @@ export default function HomePage() {
 
   const [memoDraft, setMemoDraft] = useState("");
   const [savingMemo, setSavingMemo] = useState(false);
+  const [history, setHistory] = useState([]);
 
   const { favorites, toggleFavorite, isFavorite, updateMemo } = useFavorites();
 
@@ -97,12 +98,22 @@ export default function HomePage() {
     return arr;
   }, [cardsWithMemo, sortKey]); // ✅ 여기 꼭 cardsWithMemo로!
 
-  const handleSearch = async ({ name, type }) => {
+ const handleSearch = async (payload) => {
     setHasSearched(true);
     setLoading(true);
     setError("");
+
+    // 검색기록: 이름이 있는 경우만 저장 (중복 제거, 최신이 앞으로)
+    const term = (payload?.name ?? "").trim();
+    if (term) {
+      setHistory((prev) => {
+        const next = [term, ...prev.filter((x) => x !== term)];
+        return next.slice(0, 8); // 최대 8개
+      });
+    }
+
     try {
-      const result = await fetchCards({ name, type });
+      const result = await fetchCards( payload );
       setCards(result);
     } catch (err) {
       console.error(err);
@@ -112,7 +123,7 @@ export default function HomePage() {
       setLoading(false);
     }
   };
-
+  const clearHistory = () => setHistory([]);
   const handleToggleFavoriteFromModal = async (card) => {
     try {
       await toggleFavorite(card);
@@ -122,9 +133,11 @@ export default function HomePage() {
     }
   };
 
-  return (
+
+return (
+    
     <div style={{ padding: "0 16px", maxWidth: "1200px", margin: "0 auto" }}>
-      <SearchBar onSearch={handleSearch} />
+     <SearchBar onSearch={handleSearch} history={history} onClearHistory={clearHistory} />
 
       <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "12px" }}>
         <span style={{ color: "#555" }}>정렬:</span>
@@ -157,7 +170,7 @@ export default function HomePage() {
       {loading && <p>불러오는 중...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* ✅ memo가 붙은 카드 배열을 그대로 리스트로 */}
+     
       <CardList cards={sortedCards} onCardClick={setSelectedCard} />
 
       <CardDetailModal
@@ -174,3 +187,4 @@ export default function HomePage() {
     </div>
   );
 }
+

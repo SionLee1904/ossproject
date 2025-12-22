@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+// src/App.jsx
+import { BrowserRouter, Routes, Route, Link, NavLink } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import SamplePage from "./pages/SamplePage";
 import FavoritesPage from "./pages/FavoritesPage";
@@ -6,7 +7,6 @@ import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import useAuth from "./hooks/useAuth";
 import BanlistPage from "./pages/BanlistPage";
-
 
 import SkyStriker from "./pages/deck/SkyStriker";
 import Altergeist from "./pages/deck/Altergeist";
@@ -16,60 +16,90 @@ function App() {
 
   return (
     <BrowserRouter>
-      <header
-        style={{
-          padding: "12px 16px",
-          borderBottom: "1px solid #ddd",
-          marginBottom: "16px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2 style={{ margin: 0 }}>Yu-Gi-Oh! 카드 뷰어</h2>
+      <div className="app">
+        {/* ✅ 헤더 */}
+        <header className="site-header">
+          <div className="container header-inner">
+            <Link to="/" className="brand">
+              <div className="brand-mark" aria-hidden="true" />
+              <div className="brand-text">
+                <div className="brand-title">Yu-Gi-Oh! 카드 뷰어</div>
+                <div className="brand-sub">Search · Favorites · Memo</div>
+              </div>
+            </Link>
 
-        <nav style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          <Link to="/">Home</Link>
-          <Link to="/sample">Sample Deck</Link>
-          <Link to="/favorites">Favorites</Link>
-          <Link to="/banlist">Banlist</Link>
+            <nav className="nav">
+              <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+                Home
+              </NavLink>
+              <NavLink to="/sample" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+                Sample Deck
+              </NavLink>
+              <NavLink to="/favorites" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+                Favorites
+              </NavLink>
+              <NavLink to="/banlist" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+                Banlist
+              </NavLink>
+            </nav>
 
+            <div className="auth">
+              <div className="auth-status">
+                {loadingAuth ? (
+                  <span className="muted">auth...</span>
+                ) : user ? (
+                  <span className="muted">로그인: {user.email}</span>
+                ) : (
+                  <span className="muted">로그인 안됨</span>
+                )}
+              </div>
 
-          <span style={{ marginLeft: "12px", color: "#666" }}>
-            {loadingAuth ? "auth..." : user ? `로그인: ${user.email}` : "로그인 안됨"}
-          </span>
+              {user ? (
+                <button type="button" className="btn btn-ghost" onClick={signOut}>
+                  Logout
+                </button>
+              ) : (
+                <Link className="btn btn-primary" to="/login">
+                  Login
+                </Link>
+              )}
+            </div>
+          </div>
+        </header>
 
-          {user ? (
-            <button type="button" onClick={signOut}>
-              Logout
-            </button>
-          ) : (
-            <Link to="/login">Login</Link>
-          )}
-        </nav>
-      </header>
+        {/* ✅ 메인 */}
+        <main className="site-main">
+          <div className="container page">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
 
-      <main>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/sample" element={<SamplePage />} />
-          <Route path="/sample/sky-striker" element={<SkyStriker />} />
-          <Route path="/sample/altergeist" element={<Altergeist />} />
-          <Route path="/banlist" element={<BanlistPage />} />
+              <Route path="/sample" element={<SamplePage />} />
+              <Route path="/sample/sky-striker" element={<SkyStriker />} />
+              <Route path="/sample/altergeist" element={<Altergeist />} />
 
+              <Route path="/banlist" element={<BanlistPage />} />
+              <Route path="/login" element={<LoginPage />} />
 
-          <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/favorites"
+                element={
+                  <ProtectedRoute>
+                    <FavoritesPage />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
+        </main>
 
-          <Route
-            path="/favorites"
-            element={
-              <ProtectedRoute>
-                <FavoritesPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </main>
+        {/* ✅ 푸터 */}
+        <footer className="site-footer">
+          <div className="container footer-inner">
+            <span className="muted">© {new Date().getFullYear()} Yu-Gi-Oh Viewer</span>
+            <span className="muted">Built with React · Supabase</span>
+          </div>
+        </footer>
+      </div>
     </BrowserRouter>
   );
 }

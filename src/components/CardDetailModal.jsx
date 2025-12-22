@@ -1,3 +1,4 @@
+
 // src/components/CardDetailModal.jsx
 function getBanStatus(card, banFormat) {
   const info = card?.banlist_info;
@@ -27,18 +28,15 @@ export default function CardDetailModal({
   card,
   onClose,
 
-  // 즐겨찾기 (네 프로젝트에서 쓰고 있으면 그대로 연결)
   isFavorite,
   onToggleFavorite,
 
-  // 메모 편집용(있으면 표시)
   memoValue,
   onMemoChange,
   onMemoSave,
   savingMemo = false,
   showMemoEditor = false,
 
-  // ✅ 금제 표시용
   banFormat,
 }) {
   if (!card) return null;
@@ -52,7 +50,7 @@ export default function CardDetailModal({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.5)",
+        background: "rgba(0,0,0,0.55)",
         display: "grid",
         placeItems: "center",
         padding: 16,
@@ -67,6 +65,7 @@ export default function CardDetailModal({
           borderRadius: 16,
           overflow: "hidden",
           border: "1px solid #ddd",
+          color: "#111", // ✅ 핵심: 흰 배경에서 글자가 항상 보이도록
         }}
       >
         <div style={{ display: "grid", gridTemplateColumns: "320px 1fr" }}>
@@ -74,7 +73,7 @@ export default function CardDetailModal({
             {image ? (
               <img src={image} alt={card?.name} style={{ width: "100%", display: "block" }} />
             ) : (
-              <div style={{ height: 320, display: "grid", placeItems: "center", color: "#777" }}>
+              <div style={{ height: 320, display: "grid", placeItems: "center", color: "#666" }}>
                 (이미지 없음)
               </div>
             )}
@@ -82,7 +81,7 @@ export default function CardDetailModal({
 
           <div style={{ padding: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <h2 style={{ margin: 0 }}>{card?.name}</h2>
+              <h2 style={{ margin: 0, color: "#111" }}>{card?.name}</h2>
 
               {ban && (
                 <span
@@ -92,6 +91,7 @@ export default function CardDetailModal({
                     border: "1px solid #ddd",
                     fontSize: 13,
                     background: "white",
+                    color: "#111",
                   }}
                   title={`${banFormat} ${ban.label}`}
                 >
@@ -100,9 +100,9 @@ export default function CardDetailModal({
               )}
             </div>
 
-            <div style={{ color: "#666", marginTop: 6 }}>{card?.type}</div>
+            <div style={{ color: "#444", marginTop: 6 }}>{card?.type}</div>
 
-            <div style={{ marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+            <div style={{ marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.5, color: "#111" }}>
               {card?.desc}
             </div>
 
@@ -117,13 +117,13 @@ export default function CardDetailModal({
                     border: "1px solid #ddd",
                     background: "white",
                     cursor: "pointer",
+                    color: "#111",
                   }}
                 >
                   {isFavorite ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기 추가"}
                 </button>
               )}
 
-              {/* ✅ 모든 카드 구매 링크 (상세에서도) */}
               <a
                 href={tcgPlayerUrl(card?.name)}
                 target="_blank"
@@ -134,6 +134,7 @@ export default function CardDetailModal({
                   border: "1px solid #ddd",
                   textDecoration: "none",
                   color: "#111",
+                  background: "white",
                 }}
               >
                 TCGPlayer로 구매
@@ -149,16 +150,16 @@ export default function CardDetailModal({
                   border: "1px solid #ddd",
                   textDecoration: "none",
                   color: "#111",
+                  background: "white",
                 }}
               >
                 일본(Suruga-ya) 구매
               </a>
             </div>
 
-            {/* ✅ 메모는 카드 상세에서 작성 */}
             {showMemoEditor && (
               <div style={{ marginTop: 12 }}>
-                <div style={{ fontWeight: 700, marginBottom: 6 }}>메모</div>
+                <div style={{ fontWeight: 700, marginBottom: 6, color: "#111" }}>메모</div>
                 <textarea
                   value={memoValue ?? ""}
                   onChange={(e) => onMemoChange?.(e.target.value)}
@@ -168,6 +169,9 @@ export default function CardDetailModal({
                     padding: 10,
                     borderRadius: 10,
                     border: "1px solid #ccc",
+                    background: "#fff",
+                    color: "#111",          // ✅ 메모 글자 검정
+                    caretColor: "#111",     // ✅ 커서도 검정
                   }}
                   placeholder="이 카드에 대한 메모를 적어보세요"
                 />
@@ -182,6 +186,7 @@ export default function CardDetailModal({
                       border: "1px solid #ddd",
                       background: "white",
                       cursor: "pointer",
+                      color: "#111",
                     }}
                   >
                     {savingMemo ? "저장 중..." : "메모 저장"}
@@ -200,6 +205,7 @@ export default function CardDetailModal({
                 border: "1px solid #ddd",
                 background: "white",
                 cursor: "pointer",
+                color: "#111",
               }}
             >
               닫기
